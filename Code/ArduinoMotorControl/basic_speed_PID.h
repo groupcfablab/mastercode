@@ -1,3 +1,4 @@
+//
 #ifndef basic_speed_PID_H
 #define basic_speed_PID_H
 
@@ -39,7 +40,7 @@ protected:
 	double cumulative_error;
 
 	//
-	double static const REF_CONTR_INTER_MS=1000;
+	double static constexpr REF_CONTR_INTER_MS=1000;
 
 	bool enabled;
 
