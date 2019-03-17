@@ -1,11 +1,13 @@
 //libraries
-#include "motordrivesysupdated.h"
+#include "Carlibrary.h"
 
 //globals
-controlsys motor_left, motor_right;
+//controlsys motor_left, motor_right;
+motorcontrol motor_left, motor_right;
 
 void setup()
 {
+	Serial.begin(9600);
 	const controllertype system_type = closedloop;
 	const int pwmpin__left = 5;
 	const int pwmpin__right = 6;
@@ -24,18 +26,15 @@ void setup()
 
 	const int magnets_on_circle = 49;
 	const int min_pwm_for_motor = 20;
+	const int max_rated_rpm = 230;
+	double k = 0.0002;
+	motor_left.setup(20 * k, 150 * k, 0.3*k, pwmpin__left, directionpin_left, interruptpin_left, magnets_on_circle, min_pwm_for_motor, max_rated_rpm);
+	motor_right.setup(20 * k, 150 * k, 0.3*k, pwmpin__right, directionpin_right, interruptpin_right, magnets_on_circle, min_pwm_for_motor, max_rated_rpm);
 
-	const int max_rated_rpm = 300;
-      
-	motor_left.setup(system_type, pwmpin__left, directionpin_left, buttonpins, potentiometerpin, interruptpin_left, reading_rate_ms, pwm_update_rate_ms, magnets_on_circle, min_pwm_for_motor, max_rated_rpm);
-	motor_right.setup(system_type, pwmpin__right, directionpin_right, buttonpins, potentiometerpin, interruptpin_right, reading_rate_ms, pwm_update_rate_ms, magnets_on_circle, min_pwm_for_motor, max_rated_rpm);
-        double k=0.0001;
-        motor_left.setup_pid(20*k,150*k,0.3*k);
-        //motor_right.setup_pid(20*k,150*k,0.3*k);
 }
 
 void loop()
 {
-	motor_left.routine();
-	//motor_right.routine();
+	motor_left.drive(80, false);
+	motor_right.drive(140, true);
 }
