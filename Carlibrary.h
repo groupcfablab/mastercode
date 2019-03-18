@@ -1,7 +1,7 @@
 #ifndef CARCONTROL_H
 #define CARCONTROL_H
 #include "motordrivesysupdated.h"
-
+#include <math.h>
 
 
 class motorcontrol
@@ -61,6 +61,11 @@ public:
 					motor.changedir();
 					dir_flag = true;
 				}
+				else if((targetrpm >= 0)&&(dir_flag))
+				{
+					motor.changedir();
+					dir_flag = false;
+				}
 				double outputrpm = pidcontrol.ComputePID_output(abs(targetrpm), current_speed);
 				outputpwm = map(outputrpm, 0, ratedrpm, minpwm, 255);
 				if (!motor.isStarted()) { motor.start(); }
@@ -76,6 +81,13 @@ public:
 			}
 		}
 	}
+	
+	double distance_travelled(const int wheel_diameter,const int interruptsoncircle = 49)
+	{
+		int rotations = rotation_counter.GetkDistanceCount();
+		return ((double)(rotations)/interruptsoncircle)*(wheel_diameter*PI);
+	}
+	void reset
 };
 
 class carcontroller
@@ -110,11 +122,38 @@ public:
 		}
 	}
 
-	void drive(double in_angle, double in_target_speed)
+	bool drive_turn(double in_angle, double in_target_speed, double turn_radius)
 	{
-		driving_angle = in_angle;
-		double left_speed;//FINISH THIS
-		//motor_left.drive();
+		double driving_angle = abs(in_angle)/180;//percentage
+		double left_speed=((turn_radius+5)/turn_radius)*in_target_speed;
+		double right_speed=((turn_radius-5)/turn_radius)*in_target_speed;
+		double avg_distance=(motor_left.distance_travelled(57)+motor_right.distance_travelled(57))/2;
+		double target_distance=(turn_radius*PI)*driving_angle;//ALL IN MILIMETRES
+		if(avg_distance<target_distance)
+		{
+			if(in_angle>0)
+			{
+				motor_left.drive(left_speed);
+				motor_right.drive(right_speed);
+			}
+			else if (in_angle<0)
+			{
+				motor_left.drive(right_speed);
+				motor_right.drive(left_speed);
+			}
+			else
+			{
+				motor_left.drive(in_target_speed);
+				motor_right.drive(in_target_speed);
+			}
+			Serial.println(avg_distance);
+			return false;
+			
+		}
+		else
+		{
+			return true;
+		}
 
 	}
 
